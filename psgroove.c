@@ -30,7 +30,7 @@
 
 #include "descriptor.h"
 
-// Teensy board only has the first LED, so it will turn off when 
+// Teensy board only has the first LED, so it will turn off when
 // exploit succeeds.
 #define RED		(LEDS_LED1)
 #define GREEN	(LEDS_LED2)
@@ -45,7 +45,7 @@
 #define C_PORT_NONE  0x0000 /* no change */
 uint16_t port_status[6] = { PORT_EMPTY, PORT_EMPTY, PORT_EMPTY, PORT_EMPTY, PORT_EMPTY, PORT_EMPTY };
 uint16_t port_change[6] = { C_PORT_NONE, C_PORT_NONE, C_PORT_NONE, C_PORT_NONE, C_PORT_NONE, C_PORT_NONE };
-enum { 
+enum {
 	init,
 	wait_hub_ready,
 	hub_ready,
@@ -105,8 +105,8 @@ void switch_port(int8_t port)
 
 volatile uint8_t expire = 0; /* counts down every 10 milliseconds */
 volatile uint8_t expire_led = 0; /* counts down every 10 milliseconds */
-ISR(TIMER1_OVF_vect) 
-{ 
+ISR(TIMER1_OVF_vect)
+{
 	uint16_t rate = (uint16_t) -(F_CPU / 64 / 100);
 	TCNT1H = rate >> 8;
 	TCNT1L = rate & 0xff;
@@ -135,7 +135,7 @@ void SetupHardware(void)
 	/* Hardware Initialization */
 	LEDs_Init();
 	USB_Init();
-	sei(); 
+	sei();
 }
 
 void panic(int led1, int led2)
@@ -145,7 +145,7 @@ void panic(int led1, int led2)
 		LED(led1);
 		_delay_ms(100);
 		LED(led2);
-	}		
+	}
 }
 
 void HUB_Task(void)
@@ -184,7 +184,7 @@ void JIG_Task(void)
 	}
 
         Endpoint_SelectEndpoint(1);
-        if (Endpoint_IsReadWriteAllowed() && state == p5_challenged && expire == 0) 
+        if (Endpoint_IsReadWriteAllowed() && state == p5_challenged && expire == 0)
 	{
 		if (bytes_in < 64) {
 			Endpoint_Write_PStream_LE(&jig_response[bytes_in], 8, NO_STREAM_CALLBACK);
@@ -232,7 +232,7 @@ int main(void)
 			JIG_Task();
 
 		USB_USBTask();
-		
+
 		// connect 1
 		if (state == hub_ready && expire == 0)
 		{
@@ -241,7 +241,7 @@ int main(void)
 			connect_port(1);
 			state = p1_wait_reset;
 		}
-		
+
 		if (state == p1_wait_reset && last_port_reset_clear == 1)
 		{
 			LED(GREEN);
@@ -305,7 +305,7 @@ int main(void)
 		}
 
 		// connect 4
-		if (state == p4_wait_connect && expire == 0) 
+		if (state == p4_wait_connect && expire == 0)
 		{
 			LED(GREEN);
                         expire_led = 10;
@@ -458,7 +458,7 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 			break;
 		}
 		break;
-	case DTYPE_Configuration: 
+	case DTYPE_Configuration:
 		switch (port_cur) {
 		case 0:
 			Address = (void *) HUB_Config_Descriptor;
@@ -537,7 +537,7 @@ uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
 		}
 		break;
 	}
-	
+
 	*DescriptorAddress = Address;
 	return Size;
 }
@@ -571,7 +571,7 @@ void EVENT_USB_Device_UnhandledControlRequest(void)
 	}
 
 	if (port_cur == 0 &&
-	    USB_ControlRequest.bmRequestType == 0xA3 &&  
+	    USB_ControlRequest.bmRequestType == 0xA3 &&
 	    USB_ControlRequest.bRequest == 0x00 &&   //  GET PORT STATUS
 	    USB_ControlRequest.wValue == 0x00 &&
 	    USB_ControlRequest.wLength == 0x04) {
@@ -592,7 +592,7 @@ void EVENT_USB_Device_UnhandledControlRequest(void)
 	    USB_ControlRequest.wLength == 0x00) {
 		uint8_t p = USB_ControlRequest.wIndex;
 		if (p < 1 || p > 6) return;
-		
+
 		Endpoint_ClearSETUP();
 		Endpoint_ClearIN();
 		Endpoint_ClearStatusStage();
@@ -619,7 +619,7 @@ void EVENT_USB_Device_UnhandledControlRequest(void)
 	    USB_ControlRequest.wLength == 0x00) {
 		uint8_t p = USB_ControlRequest.wIndex;
 		if (p < 1 || p > 6) return;
-		
+
 		Endpoint_ClearSETUP();
 		Endpoint_ClearIN();
 		Endpoint_ClearStatusStage();
@@ -641,7 +641,7 @@ void EVENT_USB_Device_UnhandledControlRequest(void)
 }
 
 void EVENT_USB_Device_ConfigurationChanged(void)
-{ 
+{
 	/* careful with endpoints: we don't reconfigure when "switching ports"
 	   so we need the same configuration on all of them */
 	if (!Endpoint_ConfigureEndpoint(1, EP_TYPE_INTERRUPT, ENDPOINT_DIR_IN, 8, ENDPOINT_BANK_SINGLE))
